@@ -14,8 +14,18 @@ class HttpError extends Error {
 
 function constructClientOptions(request: Request): ClientOptions {
 	const authorization = request.headers.get('Authorization');
-	if (!authorization) {
+	const url = new URL(request.url);
+	const apiToken = url.searchParams.get('apiToken');
+
+	if (!authorization && !apiToken) {
 		throw new HttpError(401, 'API token missing.');
+	}
+
+	if (apiToken) {
+		return {
+			apiEmail: '', // optional, not necessary if use token API
+			apiToken: apiToken,
+		};
 	}
 
 	const [, data] = authorization.split(' ');
@@ -31,6 +41,7 @@ function constructClientOptions(request: Request): ClientOptions {
 		apiToken: decoded.substring(index + 1),
 	};
 }
+
 
 function constructDNSRecord(request: Request): AddressableRecord {
 	const url = new URL(request.url);
